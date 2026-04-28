@@ -1,27 +1,29 @@
-from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import List, Dict
 
 
-class ExtractedSignal(BaseModel):
-    signal_type: Literal[
-        "finding",
-        "recommendation",
-        "action",
-        "clinical_statement",
-        "operational_statement",
-        "risk"
-    ]
+def extract_candidate_signals(chunks: List[Dict]) -> List[Dict]:
+    signals = []
 
-    signal_text: str
-    evidence_text: str
-    source_document: str
-    source_section: Optional[str] = None
-    paragraph_id: Optional[str] = None
+    keywords = {
+        "finding": ["evidence of", "shows", "indicates", "suggests"],
+        "recommendation": ["consider", "recommend", "would benefit", "it would be useful"],
+        "action": ["should", "must", "follow-up", "review"],
+        "risk": ["risk", "concern", "deterioration"]
+    }
 
-    subject: Optional[str] = None
-    action: Optional[str] = None
-    urgency: Optional[str] = None
-    certainty: Optional[str] = None
-    explicitness: Literal["explicit", "implied"]
+    for chunk in chunks:
+        text_lower = chunk["text"].lower()
 
-    confidence: float
+        for signal_type, terms in keywords.items():
+            if any(term in text_lower for term in terms):
+                signals.append({
+                    "signal_type": signal_type,
+                    "signal_text": chunk["text"],
+                    "evidence_text": chunk["text"],
+                    "source_document": chunk["source_document"],
+                    "paragraph_id": chunk["paragraph_id"],
+                    "explicitness": "explicit",
+                    "confidence": 0.65
+                })
+
+    return signals
