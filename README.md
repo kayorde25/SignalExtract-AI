@@ -12,3 +12,24 @@ The system is designed to identify:
 - Risks
 
 Each extracted signal is linked back to its source text, making the output auditable and suitable for downstream review.
+
+Frontend
+React / Streamlit
+
+Backend API
+FastAPI
+
+AI/NLP Layer
+LLM extraction + validation
+
+Document Processing
+PDF/Text/Email parser
+
+Database
+PostgreSQL
+
+File Storage
+Local storage first, then S3/GCS
+
+Deployment
+Render / Railway / Fly.io / Google Cloud Run
