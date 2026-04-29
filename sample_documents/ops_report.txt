@@ -1,0 +1,19 @@
+INCIDENT REPORT: Payment API latency spike
+
+Summary:
+On 2026-04-28 we observed elevated p95 latency for the Payment API.
+
+Impact:
+Operational finding: p95 latency increased from 180ms to 1.2s.
+Risk: Continued degradation could lead to failed checkouts and SLA breach.
+
+Root Cause (suspected):
+Database connection pool exhaustion during a traffic burst.
+
+Recommendations:
+- Recommend increasing the connection pool limit after load testing.
+- Consider adding an alert for pool saturation.
+
+Actions:
+Action: On-call should rollback the last deployment if latency persists.
+Action: The team must run a post-incident review within 72 hours.

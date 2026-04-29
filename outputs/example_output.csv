@@ -1,0 +1,2 @@
+signal_id,document_id,signal_type,signal_text,evidence_text,source_document,source_page,source_section,paragraph_id,subject,action,urgency,certainty,explicitness,confidence,needs_review,created_at
+example-signal-001,example-doc-001,recommendation,"Recommendation: Recommend cardiology consult.","Recommendation: Recommend cardiology consult.",clinical_note.txt,,Plan,p_7,patient,cardiology consult.,high,medium,explicit,0.8,false,2026-04-29T00:00:00Z

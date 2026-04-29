@@ -1,0 +1,51 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Sensible defaults if .env is missing
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./signalextract.db}
+      STORAGE_DIR: ${STORAGE_DIR:-./storage}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      REVIEW_THRESHOLD: ${REVIEW_THRESHOLD:-0.7}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+      ALLOWED_EXTENSIONS: ${ALLOWED_EXTENSIONS:-.txt,.pdf,.docx,.eml}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-*}
+      REQUIRE_API_KEY: ${REQUIRE_API_KEY:-false}
+      API_KEY: ${API_KEY:-}
+      EXTRACTION_MODE: ${EXTRACTION_MODE:-rule_based}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4.1-mini}
+    volumes:
+      - ./storage:/app/storage
+      - ./signalextract.db:/app/signalextract.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/ready').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      BACKEND_URL: ${BACKEND_URL:-http://backend:8000/api/v1}
+      REVIEWER: ${REVIEWER:-}
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+

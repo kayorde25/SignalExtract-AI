@@ -1,0 +1,16 @@
+From: ops@example.com
+To: team@example.com
+Subject: Action required - backup failures
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Hi team,
+
+We observed repeated backup failures for the analytics database.
+This may indicate insufficient disk space on the backup volume.
+
+Action: Please investigate the backup job logs and confirm free disk space.
+Recommendation: Consider adding a daily disk-space check.
+
+Thanks,
+Ops

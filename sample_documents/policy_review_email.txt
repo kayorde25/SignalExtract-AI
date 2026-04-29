@@ -1,0 +1,14 @@
+SUBJECT: Policy review - data retention and incident reporting
+
+Hi team,
+
+We should update the data retention policy: the current wording is ambiguous and might not meet audit expectations.
+
+Recommendation: Please clarify retention periods for clinical attachments vs operational logs.
+
+Risk: If we keep the current policy, we may fail compliance review and face remediation work.
+
+Action: Schedule a policy review meeting next week and assign an owner.
+
+Thanks,
+Compliance Ops

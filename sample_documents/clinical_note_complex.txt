@@ -1,0 +1,17 @@
+HPI:
+Patient is a 58-year-old with intermittent chest pain over the last 48 hours. Reports shortness of breath when climbing stairs. No syncope.
+
+PAST MEDICAL HISTORY:
+- HTN
+- Hyperlipidemia
+
+MEDICATIONS:
+- atorvastatin 40mg nightly
+- lisinopril 10mg daily
+
+ASSESSMENT:
+Chest pain is concerning for possible ACS; risk of acute coronary syndrome cannot be ruled out.
+
+PLAN:
+Recommendation: Recommend ECG and troponin labs today.
+Action: Schedule cardiology consult within 24 hours.

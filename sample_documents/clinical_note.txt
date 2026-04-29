@@ -1,0 +1,19 @@
+CLINICAL NOTE: ED VISIT
+
+Chief Complaint:
+Chest pain and shortness of breath.
+
+History of Present Illness:
+The patient reports intermittent chest tightness for 2 days. Symptoms worsen with exertion.
+
+Assessment:
+Findings: ECG shows non-specific ST changes. Troponin is mildly elevated.
+Risk: Possible acute coronary syndrome.
+
+Plan:
+Recommendation: Recommend cardiology consult.
+Action: The patient should receive aspirin 325 mg immediately.
+Action: Follow-up troponin in 3 hours.
+
+Disposition:
+The patient may require admission for monitoring.
