@@ -46,9 +46,16 @@ def metadata() -> dict:
         "app_version": settings.app_version,
         "api_prefix": settings.api_v1_prefix,
         "extraction_mode": settings.extraction_mode,
+        "local_llm": {
+            "enabled": bool(settings.local_llm_enabled),
+            "provider": settings.local_llm_provider,
+            "endpoint": settings.local_llm_endpoint,
+            "model": settings.local_llm_model,
+        },
         "review_threshold": settings.review_threshold,
         "max_upload_mb": settings.max_upload_mb,
         "allowed_extensions": [e.strip() for e in settings.allowed_extensions.split(",") if e.strip()],
         "require_api_key": bool(settings.require_api_key),
+        "api_key_configured": bool(settings.api_key and settings.api_key.get_secret_value().strip()),
         "cors_allow_origins": [o.strip() for o in settings.cors_allow_origins.split(",") if o.strip()],
     }

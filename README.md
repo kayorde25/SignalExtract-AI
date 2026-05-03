@@ -1,8 +1,8 @@
-# SignalExtract AI
+# CleanExtractAI (SignalExtract AI)
 
 [![SignalExtract AI CI](https://github.com/kayorde25/SignalExtract-AI/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/kayorde25/SignalExtract-AI/actions/workflows/backend-tests.yml)
 
-SignalExtract AI is an **enterprise document intelligence platform** for **auditable signal extraction**.
+CleanExtractAI is an **enterprise document intelligence platform** for **auditable signal extraction**.
 
 It converts unstructured documents (PDFs, emails, reports, clinical notes, operational runbooks) into **structured signals** (findings, recommendations, actions, risks, key clinical statements, key operational statements) while preserving **verbatim evidence** and provenance.
 
@@ -140,9 +140,12 @@ Deployment targets:
 ## API endpoints
 Base URL: `http://localhost:8000/api/v1`
 
+If API key enforcement is enabled, send the header: `x-api-key: <API_KEY>`.
+
 - `GET  /health`
 - `GET  /ready`
 - `GET  /metadata`
+- `GET  /stats`
 - `POST /documents/upload` (multipart form-data `file`)
 - `GET  /documents/{document_id}`
 - `POST /documents/{document_id}/extract-text`
@@ -151,10 +154,21 @@ Base URL: `http://localhost:8000/api/v1`
 - `GET  /history`
 - `GET  /documents/{document_id}/export.json`
 - `GET  /documents/{document_id}/export.csv`
-- `GET  /documents/{document_id}/export.approved.json`
-- `GET  /documents/{document_id}/export.approved.csv`
+- `GET  /documents/{document_id}/export-approved.json`
+- `GET  /documents/{document_id}/export-approved.csv`
 
 ## How to run locally
+
+### One-command startup (Windows)
+From the repo root:
+
+```powershell
+.\scripts\start_all.ps1
+```
+
+This opens two PowerShell windows:
+- Backend (FastAPI): `http://localhost:8000`
+- Frontend (Streamlit): `http://localhost:8501`
 
 ### 1) Backend (FastAPI)
 From the repo root:
@@ -168,6 +182,8 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
+Local config is loaded from `backend/.env` (recommended for local development).
+
 ### 2) Frontend (Streamlit)
 In a second terminal:
 
@@ -178,6 +194,10 @@ python -m venv .venv
 pip install -r requirements.txt
 streamlit run streamlit_app.py --server.port 8501
 ```
+
+The Streamlit UI reads configuration from environment variables (it also loads `backend/.env` automatically if present):
+- `BACKEND_BASE_URL` (example: `http://localhost:8000`)
+- `API_KEY` (optional, used when API key enforcement is enabled)
 
 Open: `http://localhost:8501`
 

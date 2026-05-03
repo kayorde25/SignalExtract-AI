@@ -2,13 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY frontend/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+# Copy dependencies
+COPY requirements.txt .
 
-COPY frontend/streamlit_app.py /app/streamlit_app.py
+RUN pip install --no-cache-dir -r requirements.txt
 
-ENV PYTHONUNBUFFERED=1
+# Copy all frontend files
+COPY . .
 
-EXPOSE 8501
+# Cloud Run expects PORT
+ENV PORT=8080
 
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+# Run Streamlit
+CMD streamlit run streamlit_app.py \
+    --server.port=$PORT \
+    --server.address=0.0.0.0 \
+    --server.enableCORS=false \
+    --server.enableXsrfProtection=false

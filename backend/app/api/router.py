@@ -8,6 +8,7 @@ from .routes.extraction import router as extraction_router
 from .routes.history import router as history_router
 from .routes.export import router as export_router
 from .routes.signals import router as signals_router
+from .routes.stats import router as stats_router
 
 
 api_router = APIRouter()
@@ -18,3 +19,4 @@ api_router.include_router(extraction_router, tags=["extraction"])
 api_router.include_router(history_router, tags=["history"])
 api_router.include_router(export_router, tags=["export"])
 api_router.include_router(signals_router, tags=["signals"])
+api_router.include_router(stats_router, tags=["stats"])

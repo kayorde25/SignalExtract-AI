@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* Vibrant SaaS palette */
+:root {
+  --background: #f6f8fa;
+  --surface: #ffffff;
+  --card: #f1f5f9;
+  --border: #e2e8f0;
+  --primary: #3b82f6;
+  --accent: #22c55e;
+  --error: #ef4444;
+  --foreground: #1e293b;
+  --muted: #64748b;
+  --shadow-soft: 0 8px 32px rgba(59, 130, 246, 0.10);
+  --shadow-card: 0 4px 16px rgba(59, 130, 246, 0.10);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-space-grotesk);
+}
+
+@keyframes dx-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dx-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    color-scheme: light;
+  }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.10), transparent 40%),
+      radial-gradient(circle at top right, rgba(34, 197, 94, 0.08), transparent 32%),
+      linear-gradient(180deg, #f6f8fa 0%, var(--background) 100%);
+    color: var(--foreground);
+    font-family: var(--font-inter), sans-serif;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.03em;
+  }
+  button, a, input, label {
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease,
+      opacity 180ms ease;
+  }
+}
+
+@layer components {
+  .dx-page {
+    @apply space-y-8 animate-[dx-fade-in_420ms_ease-out];
+  }
+  .dx-topbar {
+    @apply sticky top-0 z-20 flex flex-col gap-4 border-b px-6 py-5 backdrop-blur-xl md:flex-row md:items-center md:justify-between md:px-8;
+    background: linear-gradient(180deg, #f1f5f9 90%, #e0e7ef 100%);
+    border-color: color-mix(in srgb, var(--border) 86%, transparent);
+  }
+  .dx-page-header {
+    @apply flex flex-col gap-2;
+  }
+  .dx-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.22em];
+    color: color-mix(in srgb, var(--primary) 72%, white 28%);
+  }
+  .dx-title {
+    @apply text-3xl font-bold md:text-4xl;
+    color: var(--foreground);
+  }
+  .dx-subtitle {
+    @apply max-w-3xl text-sm leading-7 md:text-base;
+    color: var(--muted);
+  }
+  .dx-card {
+    @apply rounded-2xl border p-6;
+    background: linear-gradient(180deg, #f1f5f9 90%, #e0e7ef 100%);
+    box-shadow: var(--shadow-card);
+  }
+  .dx-card-hover {
+    @apply hover:-translate-y-1 hover:scale-[1.01];
+  }
+  .dx-metric-card {
+    @apply relative overflow-hidden rounded-2xl border p-6 hover:-translate-y-1 hover:scale-[1.01];
+    background: linear-gradient(180deg, #f1f5f9 90%, #e0e7ef 100%);
+    border-color: color-mix(in srgb, var(--border) 90%, transparent);
+    box-shadow: var(--shadow-card);
+  }
+  .dx-metric-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -10% -55% auto;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.12), transparent 68%);
+    pointer-events: none;
+  }
+  .dx-metric-value {
+    @apply mt-4 text-4xl font-bold;
+    color: var(--primary);
+  }
+  .dx-muted {
+    color: var(--muted);
+  }
+  .dx-button-primary {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45;
+    background: linear-gradient(180deg, #60a5fa, #3b82f6 90%);
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.18);
+  }
+  .dx-button-primary:hover {
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.22);
+  }
+  .dx-button-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold text-slate-700 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45;
+    background: #f1f5f9;
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+  }
+  .dx-button-secondary:hover {
+    background: #e0e7ef;
+    border-color: color-mix(in srgb, var(--primary) 60%, var(--border) 40%);
+  }
+  .dx-nav-link {
+    @apply block rounded-xl border px-4 py-3 text-sm font-medium text-slate-700 hover:-translate-y-0.5;
+    background: #f1f5f9;
+    border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  }
+  .dx-nav-link:hover {
+    background: #e0e7ef;
+    border-color: color-mix(in srgb, var(--primary) 60%, var(--border) 40%);
+  }
+  /* Add more component styles as needed */
+}
