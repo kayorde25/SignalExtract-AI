@@ -1,1 +1,0 @@
-"""SignalExtract AI backend package."""

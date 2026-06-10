@@ -62,7 +62,7 @@ SignalExtract AI is deployable as a SaaS-ready system:
 - Backend API: **Google Cloud Run** (containerized FastAPI)
 - Database: **Neon PostgreSQL** (swap `DATABASE_URL`)
 - Object storage: **Google Cloud Storage** (replace local `STORAGE_DIR` with a GCS-backed storage service)
-- Frontend: **Vercel** (React) or **Streamlit Cloud** (Streamlit admin console)
+- Frontend: **Next.js (React) in `/web`**, deployable to **Vercel**
 
 Reference architecture: [docs/architecture.md](docs/architecture.md)
 
@@ -83,7 +83,7 @@ This makes outputs **auditable** and suitable for downstream human review, QA, a
 ## Architecture (text diagram)
 ```
 Browser
-	└─ Frontend (Streamlit; future React/Vercel)
+	└─ Frontend (Next.js React in /web)
 				└─ HTTP
 						└─ Backend API (FastAPI)
 								 ├─ Ingestion + storage (local ./storage; future GCS)
@@ -124,14 +124,14 @@ Details: see [docs/architecture.md](docs/architecture.md).
 
 ## Tech stack
 - Backend: FastAPI, SQLModel (SQLite default)
-- Frontend: Streamlit
+- Frontend: Next.js (React, TypeScript)
 - Document extraction: pdfplumber (PDF), python-docx (DOCX), stdlib email parser (EML)
 
 Deployment targets:
 - Google Cloud Run
 - Neon PostgreSQL
 - Google Cloud Storage
-- Vercel or Streamlit Cloud
+- Vercel
 
 ## Quality Gates
 - CI: GitHub Actions runs `pytest` on push and pull requests
@@ -168,7 +168,7 @@ From the repo root:
 
 This opens two PowerShell windows:
 - Backend (FastAPI): `http://localhost:8000`
-- Frontend (Streamlit): `http://localhost:8501`
+- Frontend (Next.js): `http://localhost:3000`
 
 ### 1) Backend (FastAPI)
 From the repo root:
@@ -184,22 +184,20 @@ python -m uvicorn app.main:app --reload --port 8000
 
 Local config is loaded from `backend/.env` (recommended for local development).
 
-### 2) Frontend (Streamlit)
+### 2) Frontend (Next.js)
 In a second terminal:
 
 ```bash
-cd frontend
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-streamlit run streamlit_app.py --server.port 8501
+cd web
+npm install
+npm run dev
 ```
 
-The Streamlit UI reads configuration from environment variables (it also loads `backend/.env` automatically if present):
+The Next.js web app uses server-side environment variables:
 - `BACKEND_BASE_URL` (example: `http://localhost:8000`)
-- `API_KEY` (optional, used when API key enforcement is enabled)
+- `API_KEY` (optional; sent as `x-api-key` when provided)
 
-Open: `http://localhost:8501`
+Open: `http://localhost:3000`
 
 ## How to run with Docker
 1. Copy `.env.example` to `.env` (optional) and adjust.
@@ -210,7 +208,7 @@ docker compose up --build
 ```
 
 - Backend: `http://localhost:8000/api/v1/health`
-- Frontend: `http://localhost:8501`
+- Frontend: `http://localhost:3000`
 
 ## Example input
 Synthetic sample documents are included:

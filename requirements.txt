@@ -1,6 +1,5 @@
 pandas
 pydantic
-streamlit
 python-dotenv
 openai
 tqdm
