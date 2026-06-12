@@ -1,23 +1,38 @@
+import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
+
+type Tone = "blue" | "green" | "amber" | "slate";
+
 interface Props {
   label: string;
   value: string | number;
   sub?: string;
-  color?: "blue" | "green" | "amber" | "slate";
+  color?: Tone;
+  icon?: LucideIcon;
 }
 
-const colors = {
-  blue: "text-blue-600",
-  green: "text-green-600",
-  amber: "text-amber-600",
-  slate: "text-slate-700",
+const ICON_TONE: Record<Tone, string> = {
+  blue: "text-accent-2 bg-accent/10",
+  green: "text-success bg-success/10",
+  amber: "text-warning bg-warning/10",
+  slate: "text-muted bg-surface-2",
 };
 
-export default function KPICard({ label, value, sub, color = "slate" }: Props) {
+export default function KPICard({ label, value, sub, color = "slate", icon: Icon }: Props) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
-      <p className={`text-3xl font-bold mt-1 ${colors[color]}`}>{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+    <div className="card-surface group relative overflow-hidden p-5 transition-colors hover:border-border-strong">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs font-medium uppercase tracking-wider text-subtle">{label}</p>
+        {Icon && (
+          <span className={cn("grid h-8 w-8 place-items-center rounded-lg", ICON_TONE[color])}>
+            <Icon size={15} />
+          </span>
+        )}
+      </div>
+      <p className="mt-3 font-mono text-3xl font-semibold tracking-tight text-fg tabular-nums">
+        {value}
+      </p>
+      {sub && <p className="mt-1.5 text-xs text-subtle">{sub}</p>}
     </div>
   );
 }

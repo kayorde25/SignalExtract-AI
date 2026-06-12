@@ -62,6 +62,18 @@ async def get_document(
     return doc
 
 
+@router.get("/{document_id}/text")
+async def get_document_text(
+    document_id: str,
+    session: Session = Depends(get_session),
+    _: str | None = Depends(verify_api_key),
+):
+    doc = session.get(Document, document_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return {"id": doc.id, "text": doc.text_content or "", "char_count": doc.char_count}
+
+
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_document(
     document_id: str,

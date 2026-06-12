@@ -14,9 +14,16 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     database_url: str = "sqlite:///./signalextract.db"
-    storage_dir: str = "./storage"
     max_upload_mb: int = 25
     allowed_extensions: str = ".txt,.pdf,.docx,.eml"
+
+    # File storage backend: local (ephemeral) | gcs | s3
+    storage_type: str = "local"
+    storage_dir: str = "./storage"        # used by the local backend
+    storage_bucket: str = ""              # bucket name for gcs / s3
+    storage_prefix: str = ""              # optional object-key prefix, e.g. "uploads/"
+    s3_endpoint_url: str = ""             # for S3-compatible stores (R2, MinIO); leave blank for AWS
+    s3_region: str = ""
 
     cors_allow_origins: str = "*"
 
@@ -26,6 +33,8 @@ class Settings(BaseSettings):
     extraction_mode: str = "rule_based"  # rule_based | llm | hybrid
     review_threshold: float = 0.7
 
+    llm_provider: str = "anthropic"  # anthropic | ollama
+    llm_endpoint: str = "http://localhost:11434"  # used by ollama provider
     llm_api_key: str = ""
     llm_model: str = "claude-haiku-4-5-20251001"
 

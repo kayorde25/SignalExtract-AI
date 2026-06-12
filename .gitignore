@@ -218,3 +218,6 @@ __marimo__/
 storage/
 signalextract.db
 backend/signalextract.db
+
+# Local preview launch config
+web/.claude/

@@ -2,7 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Design tokens — RGB channel triplets so Tailwind alpha utilities work
+   (e.g. bg-accent/10).  Light is the default; .dark overrides.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: 250 250 251;
+  --surface: 255 255 255;
+  --surface-2: 244 244 246;
+  --border: 230 230 234;
+  --border-strong: 214 214 221;
+  --fg: 24 24 27;
+  --fg-muted: 90 90 102;
+  --fg-subtle: 138 138 150;
+  --accent: 110 86 207;
+  --accent-2: 124 106 222;
+  --accent-contrast: 255 255 255;
+  --success: 22 150 92;
+  --warning: 176 112 24;
+  --danger: 211 38 47;
+
+  --shadow-color: 16 16 24;
+  --glow: 110 86 207;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: 13 13 16;
+  --surface: 21 21 26;
+  --surface-2: 28 28 34;
+  --border: 38 38 45;
+  --border-strong: 54 54 63;
+  --fg: 237 237 241;
+  --fg-muted: 161 161 173;
+  --fg-subtle: 110 110 122;
+  --accent: 124 106 234;
+  --accent-2: 150 134 246;
+  --accent-contrast: 255 255 255;
+  --success: 61 214 140;
+  --warning: 245 178 70;
+  --danger: 244 99 104;
+
+  --shadow-color: 0 0 0;
+  --glow: 124 106 234;
+  color-scheme: dark;
+}
+
 @layer base {
-  html { @apply antialiased; }
-  body { @apply bg-slate-50 text-slate-900; }
+  * {
+    border-color: rgb(var(--border));
+  }
+  html {
+    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--fg));
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  /* Linear-style ambient glow on the dark canvas */
+  .dark body {
+    background-image:
+      radial-gradient(60rem 60rem at 88% -10%, rgb(var(--accent) / 0.10), transparent 55%),
+      radial-gradient(50rem 50rem at -5% 110%, rgb(var(--accent) / 0.07), transparent 50%);
+  }
+  ::selection {
+    background: rgb(var(--accent) / 0.28);
+    color: rgb(var(--fg));
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent) / 0.7);
+    outline-offset: 2px;
+  }
+  /* Scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--border-strong)) transparent;
+  }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--border-strong));
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: rgb(var(--fg-subtle)); background-clip: padding-box; }
+}
+
+@layer components {
+  /* Frosted card surface with a hairline top highlight (dark) */
+  .card-surface {
+    background-color: rgb(var(--surface));
+    border: 1px solid rgb(var(--border));
+    border-radius: 16px;
+  }
+  .dark .card-surface {
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+      0 1px 2px 0 rgb(var(--shadow-color) / 0.4);
+  }
+  .glow-accent {
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.35), 0 8px 30px -8px rgb(var(--glow) / 0.45);
+  }
+  .grid-faint {
+    background-image:
+      linear-gradient(rgb(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
+
+/* Animations */
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slide-up { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes shimmer { 100% { transform: translateX(100%) } }
+@keyframes toast-in { from { opacity: 0; transform: translateX(20px) scale(0.97) } to { opacity: 1; transform: none } }
+@keyframes toast-out { from { opacity: 1; transform: none } to { opacity: 0; transform: translateX(20px) scale(0.97) } }
+.animate-fade-in { animation: fade-in 0.4s ease both; }
+.animate-slide-up { animation: slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-toast-in { animation: toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-toast-out { animation: toast-out 0.2s ease forwards; }
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--surface-2));
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(var(--fg) / 0.06), transparent);
+  animation: shimmer 1.5s infinite;
 }

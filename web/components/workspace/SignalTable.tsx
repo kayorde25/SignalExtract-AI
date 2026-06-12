@@ -1,23 +1,73 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Check, X, Pencil, Search } from "lucide-react";
 import type { Signal, ReviewBody } from "@/lib/api";
 import { api } from "@/lib/api";
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import { cn, pct } from "@/lib/utils";
+import Badge from "@/components/ui/Badge";
+import { useToast } from "@/components/ui/Toast";
+import { cn, pct, confidenceTone } from "@/lib/utils";
+import { signalMeta, isClaimLevel } from "@/lib/signal-types";
 
 interface Props {
   signals: Signal[];
   onChanged: () => void;
+  selectedId?: string | null;
+  onSelect?: (s: Signal) => void;
+  compact?: boolean;
 }
 
-const TYPE_ICON: Record<string, string> = {
-  date: "📅", amount: "💵", percentage: "📊", email: "✉️",
-  phone: "📞", url: "🔗", identifier: "🏷️", measurement: "📏",
-  person_name: "👤", organization: "🏢", location: "📍", other: "◆",
+const TONE_BAR: Record<string, string> = {
+  success: "bg-success",
+  warning: "bg-warning",
+  danger: "bg-danger",
+};
+const TONE_TEXT: Record<string, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
 };
 
-export default function SignalTable({ signals, onChanged }: Props) {
+function ConfidenceMeter({ value }: { value: number }) {
+  const tone = confidenceTone(value);
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-1.5 w-14 overflow-hidden rounded-full bg-surface-2">
+        <div className={cn("h-full rounded-full", TONE_BAR[tone])} style={{ width: `${value * 100}%` }} />
+      </div>
+      <span className={cn("font-mono text-xs tabular-nums", TONE_TEXT[tone])}>{pct(value)}</span>
+    </div>
+  );
+}
+
+function Evidence({ evidence, value }: { evidence: string; value: string }) {
+  const parts = useMemo(() => {
+    if (!value) return [evidence];
+    const i = evidence.toLowerCase().indexOf(value.toLowerCase());
+    if (i === -1) return [evidence];
+    return [evidence.slice(0, i), evidence.slice(i, i + value.length), evidence.slice(i + value.length)];
+  }, [evidence, value]);
+
+  return (
+    <p className="line-clamp-2 text-xs leading-relaxed text-muted" title={evidence}>
+      {parts.length === 3 ? (
+        <>
+          {parts[0]}
+          <mark className="rounded bg-accent/20 px-0.5 text-accent-2">{parts[1]}</mark>
+          {parts[2]}
+        </>
+      ) : (
+        evidence
+      )}
+    </p>
+  );
+}
+
+const SELECT =
+  "h-8 rounded-lg border border-border bg-surface px-2.5 text-xs text-fg outline-none transition-colors hover:border-border-strong focus:border-accent";
+
+export default function SignalTable({ signals, onChanged, selectedId, onSelect, compact }: Props) {
+  const toast = useToast();
   const [loading, setLoading] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -25,18 +75,19 @@ export default function SignalTable({ signals, onChanged }: Props) {
   const [filterStatus, setFilterStatus] = useState("");
 
   const types = Array.from(new Set(signals.map((s) => s.signal_type))).sort();
-
-  const filtered = signals.filter((s) => {
-    if (filterType && s.signal_type !== filterType) return false;
-    if (filterStatus && s.review_status !== filterStatus) return false;
-    return true;
-  });
+  const filtered = signals.filter(
+    (s) => (!filterType || s.signal_type === filterType) && (!filterStatus || s.review_status === filterStatus),
+  );
 
   async function review(signal: Signal, body: ReviewBody) {
     setLoading(signal.id);
     try {
       await api.signals.review(signal.id, body);
+      const verb = body.review_status === "edited" ? "updated" : body.review_status;
+      toast.success(`Signal ${verb}`, signal.value);
       onChanged();
+    } catch (e: unknown) {
+      toast.error("Review failed", e instanceof Error ? e.message : "Please try again");
     } finally {
       setLoading(null);
     }
@@ -44,106 +95,105 @@ export default function SignalTable({ signals, onChanged }: Props) {
 
   return (
     <div>
-      {/* Filters */}
-      <div className="flex gap-3 mb-4 flex-wrap">
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All types</option>
-          {types.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <Search size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-subtle" />
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className={cn(SELECT, "pl-7")}>
+            <option value="">All types</option>
+            {types.map((t) => <option key={t} value={t}>{signalMeta(t).label}</option>)}
+          </select>
+        </div>
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={SELECT}>
           <option value="">All statuses</option>
-          {["pending", "approved", "rejected", "edited"].map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
+          {["pending", "approved", "rejected", "edited"].map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <span className="text-sm text-slate-500 self-center ml-auto">{filtered.length} signal{filtered.length !== 1 ? "s" : ""}</span>
+        <span className="ml-auto font-mono text-xs text-subtle">
+          {filtered.length} thing{filtered.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-200">
+      <div className="card-surface overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-xs text-slate-500 uppercase tracking-wider">
-            <tr>
-              <th className="px-4 py-3 text-left">Type</th>
-              <th className="px-4 py-3 text-left">Value</th>
-              <th className="px-4 py-3 text-left">Evidence</th>
-              <th className="px-4 py-3 text-center">Confidence</th>
-              <th className="px-4 py-3 text-center">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+          <thead>
+            <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-subtle">
+              <th className="px-4 py-3 font-medium">Type</th>
+              <th className="px-4 py-3 font-medium">Info</th>
+              {!compact && <th className="px-4 py-3 font-medium">From the document</th>}
+              <th className="px-4 py-3 font-medium">How sure</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 text-right font-medium">Is it right?</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">No signals found</td></tr>
+              <tr><td colSpan={compact ? 5 : 6} className="px-4 py-10 text-center text-sm text-subtle">Nothing matches your filters</td></tr>
             )}
-            {filtered.map((sig) => (
-              <tr key={sig.id} className={cn("hover:bg-slate-50 transition-colors", loading === sig.id && "opacity-50")}>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="mr-1">{TYPE_ICON[sig.signal_type] ?? "◆"}</span>
-                  <span className="text-slate-600">{sig.signal_type}</span>
-                </td>
-                <td className="px-4 py-3 max-w-[180px]">
-                  {editId === sig.id ? (
-                    <input
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="w-full border border-blue-400 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  ) : (
-                    <span className="font-medium text-slate-800 break-all">{sig.value}</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 max-w-[260px]">
-                  <span className="text-slate-400 text-xs line-clamp-2" title={sig.evidence}>{sig.evidence}</span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className={cn("font-semibold text-xs",
-                    sig.confidence >= 0.9 ? "text-green-600" :
-                    sig.confidence >= 0.7 ? "text-amber-600" : "text-red-500"
-                  )}>
-                    {pct(sig.confidence)}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <Badge status={sig.review_status} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex gap-1 justify-end">
+            {filtered.map((sig) => {
+              const meta = signalMeta(sig.signal_type);
+              const Icon = meta.icon;
+              const isSelected = selectedId === sig.id;
+              const claim = isClaimLevel(sig.signal_type);
+              return (
+                <tr key={sig.id}
+                  onClick={() => onSelect?.(sig)}
+                  className={cn("group border-b border-border/60 align-top last:border-0 transition-colors",
+                    onSelect && "cursor-pointer",
+                    isSelected ? "bg-accent/10" : "hover:bg-surface-2/40",
+                    loading === sig.id && "opacity-50")}>
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-2 text-muted">
+                      <span className={cn(
+                        "grid h-7 w-7 place-items-center rounded-lg border text-accent-2",
+                        claim ? "border-accent/40 bg-accent/15" : "border-border bg-surface-2",
+                      )}>
+                        <Icon size={14} />
+                      </span>
+                      <span className="text-xs">{meta.label}</span>
+                    </span>
+                  </td>
+                  <td className="max-w-[180px] px-4 py-3.5">
                     {editId === sig.id ? (
-                      <>
-                        <Button size="sm" variant="success"
-                          loading={loading === sig.id}
-                          onClick={() => { review(sig, { review_status: "edited", edited_value: editValue }); setEditId(null); }}>
-                          Save
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>Cancel</Button>
-                      </>
+                      <input
+                        autoFocus value={editValue} onChange={(e) => setEditValue(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full rounded-lg border border-accent bg-surface px-2 py-1 font-mono text-xs text-fg outline-none"
+                      />
                     ) : (
-                      <>
-                        {sig.review_status !== "approved" && (
-                          <Button size="sm" variant="success" loading={loading === sig.id}
-                            onClick={() => review(sig, { review_status: "approved" })}>✓</Button>
-                        )}
-                        {sig.review_status !== "rejected" && (
-                          <Button size="sm" variant="danger" loading={loading === sig.id}
-                            onClick={() => review(sig, { review_status: "rejected" })}>✗</Button>
-                        )}
-                        <Button size="sm" variant="ghost"
-                          onClick={() => { setEditId(sig.id); setEditValue(sig.value); }}>✎</Button>
-                      </>
+                      <span className="break-words font-mono text-[13px] font-medium text-fg">{sig.value}</span>
                     )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  {!compact && <td className="max-w-[280px] px-4 py-3.5"><Evidence evidence={sig.evidence} value={sig.value} /></td>}
+                  <td className="px-4 py-3.5"><ConfidenceMeter value={sig.confidence} /></td>
+                  <td className="px-4 py-3.5"><Badge status={sig.review_status} /></td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      {editId === sig.id ? (
+                        <>
+                          <Button size="sm" variant="success" loading={loading === sig.id}
+                            onClick={() => { review(sig, { review_status: "edited", edited_value: editValue }); setEditId(null); }}>
+                            Save
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>Cancel</Button>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+                          {sig.review_status !== "approved" && (
+                            <Button size="icon" variant="success" aria-label="Mark right" title="This is right" loading={loading === sig.id}
+                              onClick={() => review(sig, { review_status: "approved" })}><Check size={14} /></Button>
+                          )}
+                          {sig.review_status !== "rejected" && (
+                            <Button size="icon" variant="danger" aria-label="Mark wrong" title="This is wrong" loading={loading === sig.id}
+                              onClick={() => review(sig, { review_status: "rejected" })}><X size={14} /></Button>
+                          )}
+                          <Button size="icon" variant="ghost" aria-label="Fix the words" title="Fix the words"
+                            onClick={() => { setEditId(sig.id); setEditValue(sig.value); }}><Pencil size={13} /></Button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
