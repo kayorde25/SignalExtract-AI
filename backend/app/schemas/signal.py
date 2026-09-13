@@ -26,3 +26,16 @@ class SignalRead(BaseModel):
 class SignalList(BaseModel):
     items: list[SignalRead]
     total: int
+
+
+class SignalSummary(BaseModel):
+    dates: int = 0
+    money: int = 0
+    percentages: int = 0
+    emails: int = 0
+    phones: int = 0
+    urls: int = 0
+    identifiers: int = 0
+    measurements: int = 0
+    entities: int = 0
+    total: int = 0
